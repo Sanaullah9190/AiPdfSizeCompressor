@@ -11,9 +11,9 @@ const storage = multer.diskStorage({
   
     const uploadPath = path.join(__dirname,'..', 'uploads');
     
-    // Yahaan check bhi kar lo ki yeh folder hai ya nahi
+    
     if (!require('fs').existsSync(uploadPath)) {
-      // Agar nahi hai, toh bana do
+      
       require('fs').mkdirSync(uploadPath, { recursive: true });
     }
     

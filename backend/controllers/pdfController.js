@@ -1,14 +1,11 @@
-// controllers/pdfController.js
-
-// --- FIX 1: Saare zaroori imports ek saath ---
 const { execFile } = require('child_process');
 const util = require('util');
 const execFilePromise = util.promisify(execFile); 
-const fs = require('fs').promises; // <-- YEH LINE MISSING THI (fs.stat ke liye)
+const fs = require('fs').promises; 
 const path = require('path');
-const fsSync = require('fs'); // <-- Yeh (cleanupFiles ke liye)
+const fsSync = require('fs');
 const { analyzePdf } = require('../services/aiService');
-// ---
+
 
 const qualitySettings = [
   '-dPDFSETTINGS=/printer', 
@@ -16,7 +13,7 @@ const qualitySettings = [
   '-dPDFSETTINGS=/screen'   
 ];
 
-// --- FIX 2: cleanupFiles function file mein maujood hona chahiye ---
+
 const cleanupFiles = (...files) => {
   files.forEach((file) => {
     if (file && fsSync.existsSync(file)) {
@@ -25,7 +22,7 @@ const cleanupFiles = (...files) => {
   });
   console.log('Temporary files delete kar di.');
 };
-// ---
+
 
 const compressPdf = async (req, res) => {
   if (!req.file) {
@@ -42,7 +39,7 @@ const compressPdf = async (req, res) => {
   // --- AI BLOCK ---
   let originalSizeMB = 0;
   try {
-    // 'fs' ab defined hai (Fix 1)
+    // 'fs' ab defined 
     const stats = await fs.stat(inputPath);
     originalSizeMB = stats.size / (1024 * 1024); 
   } catch (statError) {
@@ -56,7 +53,7 @@ const compressPdf = async (req, res) => {
 
     if (analysisResult.type === 'Image' && targetSizeMB < analysisResult.minSize) {
       console.log('Warning: Target size AI ke recommended size se kam hai.');
-      // 'cleanupFiles' ab defined hai (Fix 2)
+      // 'cleanupFiles' 
       cleanupFiles(inputPath); 
       return res.status(400).json({
         message: `AI Warning: This PDF seems to contain images. For good quality, we recommend a target size above ${analysisResult.minSize} MB. Your target of ${targetSizeMB} MB is too low and will result in blurry images.`
@@ -68,7 +65,7 @@ const compressPdf = async (req, res) => {
   // --- END OF AI BLOCK ---
 
   
-  // --- Compression Loop (Ismein koi change nahi) ---
+  // --- Compression Loop 
   const gsCommandName = process.platform === 'win32' ? 'gswin64c' : 'gs';
   let bestOutputFile = null; 
   let smallestSize = Infinity;
