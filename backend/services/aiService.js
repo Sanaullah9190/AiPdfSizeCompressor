@@ -1,4 +1,3 @@
-const { pipeline } = require('@xenova/transformers');
 const pdfParse = require('pdf-parse');
 const fs = require('fs').promises;
 
@@ -7,6 +6,10 @@ let classifier = null;
 const initializeClassifier = async () => {
   if (!classifier) {
     console.log('AI Service (Local): Model ko pehli baar load kar raha hoon...');
+    
+    // Dynamic import to handle ES Module in CommonJS
+    const { pipeline } = await import('@xenova/transformers');
+    
     classifier = await pipeline(
       'text-classification', 
       'Xenova/distilbert-base-uncased-finetuned-sst-2-english'
@@ -16,7 +19,6 @@ const initializeClassifier = async () => {
   return classifier;
 };
 
-
 const analyzePdf = async (pdfPath, originalSizeMB) => {
   try {
     console.log('AI Service (Local): PDF padh raha hoon...');
@@ -25,10 +27,8 @@ const analyzePdf = async (pdfPath, originalSizeMB) => {
     const pdfData = await pdfParse(dataBuffer);
     const pdfText = pdfData.text.trim();
 
-   
     let recommendedMinSize = originalSizeMB * 0.15; // 15%
 
-    
     if (recommendedMinSize < 1.5) {
       recommendedMinSize = 1.5;
     }
@@ -37,19 +37,13 @@ const analyzePdf = async (pdfPath, originalSizeMB) => {
       recommendedMinSize = 10;
     }
 
-    
     const finalMinSize = Number(recommendedMinSize.toFixed(1));
 
-    // ---
-
-   
     if (pdfText.length < 100) {
       console.log('AI Service (Local): Bahut kam text mila. Ise "Image" maan raha hoon.');
-     
       return { type: 'Image', minSize: finalMinSize };
     }
 
-   
     const textClassifier = await initializeClassifier();
     const textSample = pdfText.substring(0, 500);
     console.log('AI Service (Local): Text ka analysis kar raha hoon...');
